@@ -1,0 +1,51 @@
+@PointClass = info_landmark : "Transition Landmark"
+[
+	targetname(target_source) : "Name"
+	target(target_destination) : "Target on Spawn"
+	message(target_destination) : "Spawn successful Target"
+	netname(target_destination) : "Spawn failed Target"
+	health(integer) : "Entity transition limit"
+]
+
+@PointClass color(20 100 255) = env_transition : "Env Transition"
+[
+	targetname(target_source) : "Name"
+	target(target_destination) : "Target"
+	message(string) : "Target in next map"
+	netname(target_destination) : "Transition failed Target"
+    nextmap(string) : "Next Map"
+	zoneradius(integer) : "Zone Radius"
+    zonecornermin(string) : "Transition Zone Min (X Y Z)" : "0 0 0"
+	zonecornermax(string) : "Transition Zone Max (X Y Z)" : "0 0 0"
+    landmark(string) : "Next map landmark position (X Y Z)"
+	mincount(integer) : "Minimum Monsters Required"
+    maxcount(integer) : "Maximum Monsters Allowed"
+
+	spawnflags(flags) =
+	[
+		1: "Start Off" : 0
+		2: "Trigger when Mincount Reached" : 0
+		4: "Include Enemies" : 0
+		8: "Ignore Blacklist" : 0
+	]
+]
+
+@SolidClass = func_transition : "Func Transition"
+[
+	targetname(target_source) : "Name"
+	target(target_destination) : "Target"
+	message(string) : "Target in next map"
+    netname(target_destination) : "Transition failed target"
+    nextmap(string) : "Next Map"
+    landmark(string) : "Next map landmark position (X Y Z)"
+	mincount(integer) : "Minimum Monsters Required"
+    maxcount(integer) : "Maximum Monsters Allowed"
+
+	spawnflags(flags) =
+	[
+		1: "Start Off" : 0
+		2: "Trigger when Mincount Reached" : 0
+		4: "Include Enemies" : 0
+		8: "Ignore Blacklist" : 0
+	]
+]
