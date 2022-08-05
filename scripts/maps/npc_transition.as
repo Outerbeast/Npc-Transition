@@ -14,10 +14,10 @@ namespace NPC_TRANSITION
 
 enum transition_entity_flags
 {
-    START_OFF           = 1 << 0,
-    MINCOUNT_TRIGGER    = 1 << 1,
-    INCLUDE_ENEMIES     = 1 << 2,
-    IGNORE_BLACKLIST    = 1 << 3
+    SF_START_OFF            = 1 << 0,
+    SF_MINCOUNT_TRIGGER     = 1 << 1,
+    SF_INCLUDE_ENEMIES      = 1 << 2,
+    SF_IGNORE_BLACKLIST     = 1 << 3
 }
 
 enum transition_types
@@ -111,7 +111,9 @@ class CBaseTransition : ScriptBaseEntity
             "monster_apache",
             "monster_blkop_apache",
             "monster_osprey",
-            "monster_blkop_osprey"
+            "monster_blkop_osprey",
+            "monstermaker", // Yeah, this actually does derive from CBaseMonster
+            "squadmaker"    // ^
         };
 
         if( strCustomBlacklist != "" )
@@ -119,7 +121,7 @@ class CBaseTransition : ScriptBaseEntity
         // Whitelisting is WIP
         return( !blWhitelist ? STR_NPC_BLACKLIST.find( strMonsterClassname ) >= 0 : STR_NPC_BLACKLIST.find( strMonsterClassname ) < 0 );
     }
-    //!-BUG-!!: "IsPlayerAlly()" doesn't return the true "is_player_ally" value set in the bsp. This is a hack.
+    //!-HACK-!: "IsPlayerAlly()" doesn't return the true "is_player_ally" value set in the bsp.
     int PlayerRelationToggled(EHandle hMonster)
     {
         if( !hMonster )
@@ -150,18 +152,16 @@ class CBaseTransition : ScriptBaseEntity
     // This method is WIP
     bool ClassnameFiltered(string strMonsterClassname, string strClassnameFilter, bool blInvertFilter = false)
     {
-        if( !blInvertFilter )
-            return( strClassnameFilter.Find( strMonsterClassname ) != String::INVALID_INDEX );
-        else
-            return( strClassnameFilter.Find( strMonsterClassname ) == String::INVALID_INDEX );
+        return( !blInvertFilter ? 
+                strClassnameFilter.Find( strMonsterClassname ) != String::INVALID_INDEX : 
+                strClassnameFilter.Find( strMonsterClassname ) == String::INVALID_INDEX );
     }
     // This method is WIP
     bool TargetnameFiltered(string strMonsterTargetname, string strTargetnameFilter, bool blInvertFilter = false)
     {
-        if( !blInvertFilter )
-            return( strTargetnameFilter.Find( strMonsterTargetname ) != String::INVALID_INDEX );
-        else
-            return( strTargetnameFilter.Find( strMonsterTargetname ) == String::INVALID_INDEX );
+        return( !blInvertFilter ? 
+                strTargetnameFilter.Find( strMonsterTargetname ) != String::INVALID_INDEX : 
+                strTargetnameFilter.Find( strMonsterTargetname ) == String::INVALID_INDEX );
     }
 
     bool EntityIsStuck(EHandle hEntity)
@@ -259,7 +259,7 @@ class CBaseTransition : ScriptBaseEntity
     }
 }
 
-class CTransitionEntity : CBaseTransition
+final class CTransitionEntity : CBaseTransition
 {
     private string strNextMap, strCustomBlacklist;
     private Vector vecZoneCornerMin, vecZoneCornerMax, vecLandmark;
@@ -311,7 +311,7 @@ class CTransitionEntity : CBaseTransition
         if( g_Engine.mapname != strNextMap )
             ClearSavedNpcs( strNextMap );
 
-        blInitialised = self.pev.SpawnFlagBitSet( START_OFF ) && self.GetTargetname() != "" ? false : Initialise();
+        blInitialised = self.pev.SpawnFlagBitSet( SF_START_OFF) && self.GetTargetname() != "" ? false : Initialise();
 
         BaseClass.Spawn();
     }
@@ -326,7 +326,7 @@ class CTransitionEntity : CBaseTransition
         if( self.GetTargetname() != "" && self.pev.target != self.GetTargetname() )
             return true;
             
-        if( self.pev.SpawnFlagBitSet( MINCOUNT_TRIGGER ) )
+        if( self.pev.SpawnFlagBitSet( SF_MINCOUNT_TRIGGER ) )
             return true;
 
         iMinRequired = 1;
@@ -372,7 +372,7 @@ class CTransitionEntity : CBaseTransition
         if( pMonster.pev.target != "" )
             dictMonster["target"] = "" + pMonster.pev.target;
 
-        if( string( pMonster.pev.netname ) != "" )
+        if( pMonster.pev.netname != "" )
             dictMonster["netname"] = "" + pMonster.pev.netname;
 
         if( pMonster.m_fCustomModel )
@@ -416,10 +416,10 @@ class CTransitionEntity : CBaseTransition
             if( !MonsterIsValid( P_ENTITIES[i] ) || GetTransitionType( P_ENTITIES[i] ) == DONT_TRANSITION )
                 continue;
 
-            if( MonsterInBlacklist( P_ENTITIES[i].GetClassname(), strCustomBlacklist ) && !self.pev.SpawnFlagBitSet( IGNORE_BLACKLIST ) )
+            if( MonsterInBlacklist( P_ENTITIES[i].GetClassname(), strCustomBlacklist ) && !self.pev.SpawnFlagBitSet( SF_IGNORE_BLACKLIST ) )
                 continue;
 
-            if( !P_ENTITIES[i].IsPlayerAlly() && !self.pev.SpawnFlagBitSet( INCLUDE_ENEMIES ) )
+            if( !P_ENTITIES[i].IsPlayerAlly() && !self.pev.SpawnFlagBitSet( SF_INCLUDE_ENEMIES ) )
                 continue;
 
             DICT_MONSTERS.insertLast( NpcData( P_ENTITIES[i] ) );
@@ -438,8 +438,8 @@ class CTransitionEntity : CBaseTransition
         const string strFileName = "scripts/maps/" + strNpcSaveDir + strNextMap + ".npc";
         File@ fileNpc = g_FileSystem.OpenFile( strFileName, OpenFile::WRITE );
 
-		if( fileNpc !is null && fileNpc.IsOpen() )
-		{	
+        if( fileNpc !is null && fileNpc.IsOpen() )
+        {
             for( uint i = 0; i < DICT_SAVED_NPCS.length(); i++ )
             {
                 if( DICT_SAVED_NPCS[i].isEmpty() )
@@ -451,7 +451,7 @@ class CTransitionEntity : CBaseTransition
 
             if( self.pev.message != "" )
             {
-                dictionary dictAuto =
+                const dictionary dictAuto =
                 {
                     { "classname", "trigger_auto" },
                     { "target", "" + self.pev.message },
@@ -463,8 +463,8 @@ class CTransitionEntity : CBaseTransition
                 fileNpc.Write( "" + FormatEntityData( dictAuto, "auto" ) + "\n" );
             }
 
-			fileNpc.Close();
-		}
+            fileNpc.Close();
+        }
     }
     
     void Think()
@@ -476,7 +476,7 @@ class CTransitionEntity : CBaseTransition
         blShouldTransition = iNpcsInZone >= iMinRequired;
         self.pev.frags = float( iNpcsInZone );
 
-        if( blShouldTransition && self.pev.SpawnFlagBitSet( MINCOUNT_TRIGGER ) && self.pev.target != "" && self.pev.target != self.GetTargetname() )
+        if( blShouldTransition && self.pev.SpawnFlagBitSet( SF_MINCOUNT_TRIGGER ) && self.pev.target != "" && self.pev.target != self.GetTargetname() )
         {
             self.Use( self, self, USE_ON, 0.0f );
             self.pev.nextthink = 0.0f;
@@ -494,8 +494,8 @@ class CTransitionEntity : CBaseTransition
 
         if( !blInitialised )
         {
-            if( self.pev.SpawnFlagBitSet( START_OFF ) )
-                self.pev.spawnflags &= ~START_OFF;
+            if( self.pev.SpawnFlagBitSet( SF_START_OFF) )
+                self.pev.spawnflags &= ~SF_START_OFF;
 
             blInitialised = Initialise();
 
@@ -523,7 +523,7 @@ class CTransitionEntity : CBaseTransition
     }
 }
 
-class CLandmarkEntity : CBaseTransition
+final class CLandmarkEntity : CBaseTransition
 {
     private int iNumPositioned
     {
