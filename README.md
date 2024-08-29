@@ -5,13 +5,15 @@ Custom entities that allow npcs to cross level changes in Sven Co-op
 
 # Getting Started:
 
-To install download the package from the "Releases" section on the right and extract into your map's dir/`svencoop_addon`
+To install [download the package](https://github.com/Outerbeast/Npc-Transition/releases/download/v1.0/npc_transition_v1.0.zip) from the "Releases" section on the right and extract into your map's dir/`svencoop_addon`
 To enable it in your map(s) either:
 - `map_script npc_transition` in your map's cfg file
 OR
-- `#include "npc_transition" in your map's main script file header
+
+- `#include "npc_transition"` in your map's main script file header
 OR
-Add a trigger_script entity pointing with the keyvalue `"m_iszScriptFile" "npc_transition"`
+
+- Add a trigger_script entity pointing with the keyvalue `"m_iszScriptFile" "npc_transition"`
 
 # Description
 
