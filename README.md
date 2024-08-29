@@ -5,22 +5,13 @@ Custom entities that allow npcs to cross level changes in Sven Co-op
 
 # Getting Started:
 
-To install download the package from the "Releases" section on the right and extract into maps
-
-Registering the entity
-- Create a blank .as file, name it my_map.as
-- Open it and add the following code:-
-```
-#include "npc_transition"
-
-void MapInit()
-{
-   NPC_TRANSITION::EntityRegister();
-}
-```
-then save
-- In your map cfg, add the code then save:-
-`map_script my_map`
+To install download the package from the "Releases" section on the right and extract into your map's dir/`svencoop_addon`
+To enable it in your map(s) either:
+- `map_script npc_transition` in your map's cfg file
+OR
+- `#include "npc_transition" in your map's main script file header
+OR
+Add a trigger_script entity pointing with the keyvalue `"m_iszScriptFile" "npc_transition"`
 
 # Description
 
@@ -34,7 +25,7 @@ The entity comes in two flavours, but both share the same keys and flags:
 - `env_transition` is a point entity that uses a user-defined zone which if npcs exist inside of will be saved and transferred to the next level. The entity can use a radius or a sizeable bounding box to define the zone. The entity's position sets the current level landmark, the exact position in the map is not important but the next maps landmark position must match.
 - `func_transition` is a brush entity which the transition zone is based on the brush model dimensions, and must use a brush origin as the landmark. Only cuboidal brush models are allowed.
 
-"frags" can be used to get the current number of entities within the zone.
+`"frags"` can be used to get the current number of entities within the zone.
 
 ## Positioning
 
