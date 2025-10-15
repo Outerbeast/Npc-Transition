@@ -4,6 +4,7 @@ Custom entities that allow npcs to cross level changes in Sven Co-op
 # Getting Started:
 
 To install [download](https://github.com/Outerbeast/Npc-Transition/archive/refs/heads/main.zip) and extract into your map's `scripts/maps/` folder
+
 To enable it in your map(s) either:
 - `map_script npc_transition` in your map's cfg file
 OR
@@ -86,5 +87,6 @@ These are keyvalues that are meant to be set for monster entities in the map.
 # Planned features:
 - Add a classname/targetname filter
 - Add a feature for blacklist inversion
+
 
 
